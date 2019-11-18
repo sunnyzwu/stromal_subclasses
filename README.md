@@ -5,11 +5,30 @@ code for data processing and visualisation associated with the stromal subclasse
 job submission script for single-cell RNA-Seq processing using cellranger v2.1.1. 
 
 ### 02 seurat v2 processing of individual datasets
+job submission script and R script for processing individual seurat objects
 
 ### 03 seurat v2 data integration
+job submission script and R script for integrating seurat objects
 
-### 04 seurat v2 data integration
+### 04 cluster annotation and reclustering 
+job submission script and R script for manual cluster annotations and reclustering epithelial cells and stromal-immune cells seperately
 
-### pySCENIC transcription factor enrichment
+### 05 AUCell gene signature scoring
+job submission script and R script for scoring stromal-immune cells with cell type signatures (XCell database) using the AUCell method
+
+### 06 reclustering stromal subpopulations
+R script for reclustering CAFs and VDSCs using seurat v2 and visualisation using various R packages.
+
+### 07 pySCENIC transcription factor enrichment of reclustered CAFs and VDSCs
+job submission script for running pySCENIC (python based command line version) using the CAFs and VDSC raw count expression matrix as input. This also includes R script for filtering top TF candidates for clustering and visualisation
+
+### 08 stromal cell signalling predictions
+R script visualisation scripts for filtering stromal cell-cell signalling predictions. For processing ligand-receptor analysis, please visit (enter git link for Ruis github link)
+
+### 09 Immune evasion using TIDE
+For computing T-cell dysfunction and exclusion analysis, please see the tumour immune dysfunction and exclusion (TIDE) method
+
+- paper: https://www.nature.com/articles/s41591-018-0136-1
+- link to online tool: http://tide.dfci.harvard.edu/
 
 
