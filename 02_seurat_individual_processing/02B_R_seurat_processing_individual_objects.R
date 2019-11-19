@@ -145,12 +145,12 @@ seurat_10X <- AddMetaData(object = seurat_10X,
     subset.names = c("nGene", 
                      "percent.mito"),
     low.thresholds = c(
-      200,
+      50,
       0
     ),
     high.thresholds = c(
       Inf,
-      0.1
+      0.4
     )
   )
 

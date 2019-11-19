@@ -90,6 +90,24 @@ for (samplename in temp_sample_names) {
          )
 }
 
+# additional conservative filters
+for (samplename in temp_sample_names) {
+  temp_seurat_object <- get(paste0("temp_seurat_object_", samplename))
+  
+  temp_seurat_object <- FilterCells(
+    object = temp_seurat_object,
+    subset.names = c("nGene", "percent.mito"),
+    low.thresholds = c(200, 0.0),
+    high.thresholds = c(Inf, 0.1))
+  
+  n <- paste0("temp_seurat_object_", samplename)
+  assign(n,
+         temp_seurat_object)
+  
+  rm(temp_seurat_object)
+}
+
+
 # 05 INTEGRATE DATA -----------------------------------------------------------------
 
   # make list of seurat objects 
@@ -185,24 +203,25 @@ for (samplename in temp_sample_names) {
       save.SNN = T
     )
   
-  
 # 07 DR PLOTS -------------------------------------------------------------------
   
   
   for(reduction in c("tsne","umap")){  
     
-    temp_png_function(paste0("Output/Figures/01_",reduction,"_Plot.png"))
-    DimPlot(
-      object = temp_seurat_10X,
-      do.label = T,
-      label.size = 4,
-      pt.size = 1,
-      group.by = "ident",
-      reduction.use = paste0(reduction,
-                             "_",
-                             20) 
-    )
-    dev.off()
+    for(res in c(c(0.8,1,1.2))){
+      temp_png_function(paste0("Output/Figures/01_",reduction,"_Plot_res_",res,".png"))
+      DimPlot(
+        object = temp_seurat_10X,
+        do.label = T,
+        label.size = 4,
+        pt.size = 1,
+        group.by = paste0("res.",res),
+        reduction.use = paste0(reduction,
+                               "_",
+                               20) 
+      )
+      dev.off()
+    }
   }
   
   for(reduction in c("tsne","umap")){  
@@ -210,7 +229,7 @@ for (samplename in temp_sample_names) {
     temp_png_function(paste0("Output/Figures/02_",reduction,"_by_sampleID.png"))
     DimPlot(
       object = temp_seurat_10X,
-      do.label = T,
+      do.label = F,
       label.size = 4,
       pt.size = 1,
       group.by = "orig.ident",
