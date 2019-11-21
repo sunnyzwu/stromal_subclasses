@@ -130,7 +130,7 @@ for (samplename in temp_sample_names) {
     temp_combined_genes <-
       temp_combined_genes[temp_combined_genes %in% rownames(temp_sample_list[[i]]@scale.data)]
   }
-
+  
   # Run multiCCA
   temp_seurat_10X <- RunMultiCCA(
     object.list = temp_sample_list,

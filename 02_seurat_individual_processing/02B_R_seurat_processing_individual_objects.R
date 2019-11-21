@@ -122,7 +122,7 @@ seurat_10X <- AddMetaData(object = seurat_10X,
                                     lower = 250)
   
   temp_is.cell <- 
-    temp_emptyDrops_out$FDR <= 0.01
+    temp_emptyDrops_out$FDR <= 0.1
   
   sum(temp_is.cell, 
       na.rm=TRUE)
@@ -142,7 +142,7 @@ seurat_10X <- AddMetaData(object = seurat_10X,
   # additional conservative gene filter
   seurat_10X <- FilterCells(
     object = seurat_10X,
-    subset.names = c("nGene", 
+    subset.names = c("nGene",
                      "percent.mito"),
     low.thresholds = c(
       50,
@@ -150,7 +150,7 @@ seurat_10X <- AddMetaData(object = seurat_10X,
     ),
     high.thresholds = c(
       Inf,
-      0.4
+      0.2
     )
   )
 
