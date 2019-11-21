@@ -12,7 +12,7 @@ source activate Renv
   SPECIES='human'
   ## script path
   TEMPPWD=$(pwd)
-  SEURATSCRIPT="${TEMPPWD}/04B_R_seurat_integration.R"
+  SEURATSCRIPT="${TEMPPWD}/04B_R_cluster_annotation_reclustering_analysis.R"
   ## seurat individual objects path
   SEURATOUTPUTPATH="/share/ScratchGeneral/sunwu/projects/Stromal_heterogeneity_paper/REPROCESSING_FROM_RAW/03_seurat_integration/output/"
   # job name
