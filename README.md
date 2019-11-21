@@ -13,8 +13,12 @@ job submission script and R script for integrating seurat objects
 ### 04 cluster annotation and reclustering 
 job submission script and R script for cluster annotations and reclustering of epithelial cells, stromal-immune cells and individual stromal subpopulations (CAFs and VDSCs). This R script also includes the generation of stromal gene signatures and export of gene expression matrices for downstream SCENIC (step 06).
 
-### 05 AUCell gene signature scoring
-job submission script and R script for scoring stromal-immune cells with cell type signatures (XCell database) using the AUCell method
+### 05 gene signature analysis
+#### AUCell
+R scripts for scoring of stromal-immune cells with cell type signatures (XCell database), T-cell exhaustion signatures (Blackburn et al. 2008) and the pancreatic ductal adenocarcinoma CAF signatures (David Tuveson's lab) using the AUCell method
+
+#### clusterProfiler
+R scripts for gene ontology enrichment of the gene signatures for each stromal subcluster. Top 250 DEGs are used. 
 
 ### 06 pySCENIC transcription factor enrichment of reclustered CAFs and VDSCs
 job submission script for running pySCENIC (python based command line version) using the CAFs and VDSC raw count expression matrix as input. This also includes R script for filtering top TF candidates for clustering and visualisation
