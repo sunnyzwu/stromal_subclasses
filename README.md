@@ -1,5 +1,5 @@
 # stromal_subclasses
-code for data processing and visualisation associated with the stromal subclasses manuscript 
+code for data processing and visualisation associated with the Wu et al. manuscript "Single-cell analysis reveals diverse stromal subsets associated with immune evasion in triple-negative breast cancer"
 
 ### 01 cellranger count processing
 job submission script for single-cell RNA-Seq processing using cellranger v2.1.1. 
@@ -11,15 +11,12 @@ job submission script and R script for processing individual seurat objects
 job submission script and R script for integrating seurat objects
 
 ### 04 cluster annotation and reclustering 
-job submission script and R script for manual cluster annotations and reclustering epithelial cells and stromal-immune cells seperately
+job submission script and R script for cluster annotations and reclustering of epithelial cells, stromal-immune cells and individual stromal subpopulations (CAFs and VDSCs). This R script also includes the generation of stromal gene signatures and export of gene expression matrices for downstream SCENIC (step 06).
 
 ### 05 AUCell gene signature scoring
 job submission script and R script for scoring stromal-immune cells with cell type signatures (XCell database) using the AUCell method
 
-### 06 reclustering stromal subpopulations
-R script for reclustering CAFs and VDSCs using seurat v2 and visualisation using various R packages.
-
-### 07 pySCENIC transcription factor enrichment of reclustered CAFs and VDSCs
+### 06 pySCENIC transcription factor enrichment of reclustered CAFs and VDSCs
 job submission script for running pySCENIC (python based command line version) using the CAFs and VDSC raw count expression matrix as input. This also includes R script for filtering top TF candidates for clustering and visualisation
 
 ### 08 stromal cell signalling predictions
