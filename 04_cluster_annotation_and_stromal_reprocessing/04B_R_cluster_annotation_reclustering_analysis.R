@@ -60,6 +60,9 @@ library(dplyr)
 dir.create("Output")
 dir.create("Output/Figures")
 dir.create("Output/Rdata")
+dir.create("Output/Matrices_metadata")
+dir.create("Output/Stromal_gene_signatures")
+
 
 # 04 LOAD DATA ------------------------------------------------------------
 
@@ -342,93 +345,90 @@ for(celltype in c("Epithelial", "Stromal_Immune")){
   dev.off()
   }
   
-# 08 SAVE REPROCESSED OBJECTS ---------------------------------------------
-
-for(celltype in c("Epithelial", "Stromal_Immune")){
-  temp_subset <- 
-    get(paste0("temp_subset_",celltype))
-
-  saveRDS(temp_subset,
-          paste0("Output/Rdata/Rdata_",celltype,".png"))
-  
-  }
-
-# 09 STROMAL RECLUSTERING: REALIGNMENT ----------------------------------------------
+# 08 STROMAL RECLUSTERING: REALIGNMENT AND RECLUSTERING ----------------------------------------------
 
 for(fibroblast in c("Fibroblasts_1","Fibroblasts_2")){
   print(fibroblast)
   
   temp_stromal_subset <- SubsetData(temp_subset_Stromal_Immune,
                                ident.use = fibroblast)
+  # re-run CCA only the smaller FB2 cluster which showed no structure 
+  if(fibroblast == "Fibroblasts_2"){
 
-  temp_stromal_subset <- SetAllIdent(temp_stromal_subset, 
-                                id = "orig.ident")
-  
-  temp_orig_ident <- unique(temp_stromal_subset@meta.data$orig.ident)
-  
-  temp_combined_genes <- c()
-  for(i in temp_orig_ident){
-    
-    temp_stromal_subset_orig.ident <- SubsetData(temp_stromal_subset, 
-                              ident.use = i)
-    
-    temp_stromal_subset_orig.ident <- FindVariableGenes(
-      object = temp_stromal_subset_orig.ident,
-      mean.function = ExpMean,
-      dispersion.function = LogVMR,
-      x.low.cutoff = 0.05,
-      x.high.cutoff = 8,
-      y.cutoff = 0.5,
-      y.high.cutoff = Inf, 
-      do.plot = F
-    )
-    
-    temp_combined_genes <- c(temp_combined_genes,
-                             head(
-                               rownames(temp_stromal_subset_orig.ident@hvg.info),
-                               1000
-                             ))
-    
-    n <- paste0("temp_stromal_subset_orig.ident_",
-                i)
-    
-    assign(n, 
-           temp_stromal_subset_orig.ident)
-    rm(temp_stromal_subset_orig.ident)
+      temp_stromal_subset <- SetAllIdent(temp_stromal_subset, 
+                                    id = "orig.ident")
+      
+      temp_orig_ident <- unique(temp_stromal_subset@meta.data$orig.ident)
+      
+      temp_combined_genes <- c()
+      for(i in temp_orig_ident){
+        
+        temp_stromal_subset_orig.ident <- SubsetData(temp_stromal_subset, 
+                                  ident.use = i)
+        
+        temp_stromal_subset_orig.ident <- FindVariableGenes(
+          object = temp_stromal_subset_orig.ident,
+          mean.function = ExpMean,
+          dispersion.function = LogVMR,
+          x.low.cutoff = 0.05,
+          x.high.cutoff = 8,
+          y.cutoff = 0.5,
+          y.high.cutoff = Inf, 
+          do.plot = F
+        )
+        
+        temp_combined_genes <- c(temp_combined_genes,
+                                 head(
+                                   rownames(temp_stromal_subset_orig.ident@hvg.info),
+                                   1000
+                                 ))
+        
+        n <- paste0("temp_stromal_subset_orig.ident_",
+                    i)
+        
+        assign(n, 
+               temp_stromal_subset_orig.ident)
+        rm(temp_stromal_subset_orig.ident)
+      }
+      
+      # make list of seurat objects for >2 sample processing
+      temp_sample_list <-
+        mget(ls(pattern = "temp_stromal_subset_orig.ident_*"))
+      
+      temp_combined_genes_unique <- names(which(table(temp_combined_genes) > 1))
+      
+      # conservative approach to remove all ribosomal & mitochondrial genes from integration to avoid artefacts
+      temp_combined_genes_unique <- temp_combined_genes_unique[!grepl("RPL",temp_combined_genes_unique)]
+      temp_combined_genes_unique <- temp_combined_genes_unique[!grepl("MT-",temp_combined_genes_unique)]
+      temp_combined_genes_unique <- temp_combined_genes_unique[!grepl("RPS",temp_combined_genes_unique)]
+      
+      temp_stromal_subset_integrated <- RunMultiCCA(
+        object.list = temp_sample_list,
+        genes.use = temp_combined_genes_unique,
+        niter = 25,
+        num.ccs = 20,
+        standardize = TRUE
+      )
+      
+      temp_stromal_subset_integrated <- AlignSubspace(
+        object = temp_stromal_subset_integrated,
+        reduction.type = "cca",
+        grouping.var = "orig.ident",
+        verbose = T,
+        dims.align = 1:20
+      )
+
   }
   
-  # make list of seurat objects for >2 sample processing
-  temp_sample_list <-
-    mget(ls(pattern = "temp_stromal_subset_orig.ident_*"))
-  
-  temp_combined_genes_unique <- names(which(table(temp_combined_genes) > 1))
-  
-  # conservative approach to remove all ribosomal & mitochondrial genes from integration to avoid artefacts
-  temp_combined_genes_unique <- temp_combined_genes_unique[!grepl("RPL",temp_combined_genes_unique)]
-  temp_combined_genes_unique <- temp_combined_genes_unique[!grepl("MT-",temp_combined_genes_unique)]
-  temp_combined_genes_unique <- temp_combined_genes_unique[!grepl("RPS",temp_combined_genes_unique)]
-  
-  temp_stromal_subset_integrated <- RunMultiCCA(
-    object.list = temp_sample_list,
-    genes.use = temp_combined_genes_unique,
-    niter = 25,
-    num.ccs = 10,
-    standardize = TRUE
-  )
-  
-  temp_stromal_subset_integrated <- AlignSubspace(
-    object = temp_stromal_subset_integrated,
-    reduction.type = "cca",
-    grouping.var = "orig.ident",
-    verbose = T,
-    dims.align = 1:10
-  )
-
+  # new cell IDs
   if(fibroblast == "Fibroblasts_1"){
     temp_id <- "CAFs"
+    temp_stromal_subset_integrated <- temp_stromal_subset
   }
   if(fibroblast == "Fibroblasts_2"){
     temp_id <- "VDSCs"
+    rm(temp_sample_list)
+    rm(list = ls(pattern = "temp_stromal_subset_orig.ident_"))
   }
   
   n <- paste0("temp_stromal_subset_integrated_",
@@ -436,13 +436,9 @@ for(fibroblast in c("Fibroblasts_1","Fibroblasts_2")){
   assign(n, 
          temp_stromal_subset_integrated)
   
-  rm(list = ls(pattern = "temp_stromal_subset_orig.ident_"))
   rm(temp_stromal_subset)
-  rm(temp_sample_list)
   rm(temp_stromal_subset_integrated)
 }
-
-# 10 STROMAL RECLUSTERING: RERUN DIMENSIONAL REDUCTION ------------------------------------------
 
 for(stromalsubset in c("CAFs", "VDSCs")){
   
@@ -450,9 +446,11 @@ for(stromalsubset in c("CAFs", "VDSCs")){
                                                stromalsubset))
   if(stromalsubset == "CAFs"){
     temp_dims <- 20
+    temp_dims_clustering <- 20
   }
   if(stromalsubset == "VDSCs"){
     temp_dims <- 4
+    temp_dims_clustering <- 4
   }
   
   temp_stromal_subset_integrated <- RunTSNE(temp_stromal_subset_integrated,
@@ -464,7 +462,7 @@ for(stromalsubset in c("CAFs", "VDSCs")){
     FindClusters(
       object = temp_stromal_subset_integrated,
       reduction.type = "cca.aligned",
-      dims.use = 1:temp_dims_use,
+      dims.use = 1:temp_dims_clustering,
       resolution = c(0.2,0.3,0.4),
       print.output = F,
       save.SNN = T,
@@ -478,7 +476,7 @@ for(stromalsubset in c("CAFs", "VDSCs")){
 }
 
 
-# 11 STROMAL RECLUSTERING: VISUALISATION AND GENE EXPRESSION --------------
+# 09 STROMAL RECLUSTERING: VISUALISATION AND GENE EXPRESSION --------------
 
 temp_GOIs <-
   c("PDGFRB","THY1","S100A4", "ITGB1",
@@ -493,11 +491,11 @@ temp_GOIs <-
 for(stromalsubset in c("CAFs", "VDSCs")){
   
   if(stromalsubset == "CAFs"){
-    temp_cols_use <- c("#f4a582","#ca0020")
+    # temp_cols_use <- c("#f4a582","#ca0020")
     temp_pt_size <- 4
   }
   if(stromalsubset == "VDSCs"){
-    temp_cols_use <- c("#0571b0","#92c5de")
+    # temp_cols_use <- c("#0571b0","#92c5de")
     temp_pt_size <- 5
   }
   
@@ -508,23 +506,22 @@ for(stromalsubset in c("CAFs", "VDSCs")){
     function(x) {
       png(
         file = (x), 
-        width = 8, 
-        height = 8, 
+        width = 4, 
+        height = 4, 
         res = 300, 
         units = 'in'
       )
     }
   
   for(res in c(0.2,0.3,0.4)){
-    temp_png_function(paste0("Output/Figures/04_",stromalsubset,"_",res,".png"))
+    temp_png_function(paste0("Output/Figures/04_",stromalsubset,"_res.",res,".png"))
     DimPlot(
       object = temp_stromal_subset_integrated,
       do.label = T,
       label.size = 4,
-      pt.size = 0.1,
+      pt.size = temp_pt_size,
       group.by = paste0("res.",res),
-      reduction.use = "tsne",
-      cols = temp_cols_use
+      reduction.use = "tsne"
     )
     dev.off()
   }
@@ -533,38 +530,147 @@ for(stromalsubset in c("CAFs", "VDSCs")){
     function(x) {
       png(
         file = (x), 
-        width = 8, 
-        height = 8, 
+        width = 12, 
+        height = 12, 
         res = 300, 
         units = 'in'
       )
     }
   
-  temp_featureplot <- FeaturePlot(
+  temp_png_function(paste0("Output/Figures/05_featureplot_",stromalsubset,".png"))
+  FeaturePlot(
     temp_stromal_subset_integrated,
     features.plot = temp_GOIs,
-    pt.size = 0.1,
-    reduction.use = "tsne"
+    pt.size = 2,
+    reduction.use = "tsne", 
+    do.return = T
   )
-  temp_png_function(paste0("Output/Figures/04_",stromalsubset,"_",res,".png"))
-  print(temp_featureplot)
   dev.off()
   
 }
 
 
 
-# 12 ANNOTATION OF STROMAL CELLS ---------------------------------------------
+# 10 ANNOTATION OF STROMAL/IMMUNE/EPITHELIAL CELLS AND COMBINE OBJECTS ---------------------------------------------
 
+# annotate stromal cells
+for(stromalsubset in c("CAFs", "VDSCs")){
+  
+  if(stromalsubset == "CAFs"){
+    current.cluster.ids <- c(0,1)
+    new.cluster.ids <- c("iCAFs", "myCAFs")
+    res <-  0.2
+  }
+  if(stromalsubset == "VDSCs"){
+    current.cluster.ids <- c(0,1)
+    new.cluster.ids <- c("dVDSCs", "imVDSCs")
+    res <-  0.2
+  }
+  
+  temp_stromal_subset_integrated <- get(paste0("temp_stromal_subset_integrated_",
+                                               stromalsubset))
 
-# 13 GENERATION OF STROMAL GENE SIGNATURES --------------------------------
+  temp_stromal_subset_integrated <- SetAllIdent(temp_stromal_subset_integrated,
+                                     id = paste0("res.",res))
+  
+  
+  temp_stromal_subset_integrated@ident <- plyr::mapvalues(temp_stromal_subset_integrated@ident, 
+                                               from = current.cluster.ids, 
+                                               to = new.cluster.ids)
+  
+  temp_stromal_subset_integrated@meta.data$stromal_celltype <- 
+    temp_stromal_subset_integrated@ident
+  
+  temp_png_function(paste0("Output/Figures/06_",stromalsubset,"_annotated.png"))
+  DimPlot(
+    object = temp_stromal_subset_integrated,
+    do.label = T,
+    label.size = 10,
+    pt.size = temp_pt_size,
+    group.by = "stromal_celltype",
+    reduction.use = "tsne"
+  )
+  dev.off()
+  
+  n <- paste0("temp_stromal_subset_integrated_",
+              stromalsubset)
+  assign(n, 
+         temp_stromal_subset_integrated)
 
+  }
 
+# combined objects
+temp_merged_stromal <- MergeSeurat(temp_stromal_subset_integrated_CAFs,
+                                   temp_stromal_subset_integrated_VDSCs)
 
-# 14 EXPORT MATRICES ---------------------------------------------------------
+temp_merged_stromal <- 
+  SetAllIdent(temp_merged_stromal,
+              id = "stromal_celltype")
 
+# annotate stromal cells within complete stromal-immune object
+temp_df <- data.frame(row.names = row.names(temp_subset_Stromal_Immune@meta.data),
+                                  celltype = temp_subset_Stromal_Immune@meta.data$celltype)
+temp_df <- 
+  temp_df[!temp_df$celltype %in% c("Fibroblasts_1",
+                                   "Fibroblasts_2"),,drop=F]
 
-# 14 SAVE REPROCESSED OBJECTS ---------------------------------------------
+temp_df_stromal <- data.frame(row.names = row.names(temp_merged_stromal@meta.data),
+                                  celltype = temp_merged_stromal@meta.data$stromal_celltype)
+
+temp_df <- rbind(temp_df,
+                 temp_df_stromal)
+
+temp_df <- temp_df[row.names(temp_subset_Stromal_Immune@meta.data),,drop=F]
+
+temp_subset_Stromal_Immune <- AddMetaData(temp_subset_Stromal_Immune, 
+                                             metadata = temp_df)
+
+# re-annotate stromal-immune cells
+temp_subset_Stromal_Immune@meta.data$celltype <- factor(temp_subset_Stromal_Immune@meta.data$celltype,
+                                                    levels=unique(temp_subset_Stromal_Immune@meta.data$celltype))
+
+levels(temp_subset_Stromal_Immune@meta.data$celltype)[levels(temp_subset_Stromal_Immune@meta.data$celltype)=="T_Cells_Cycling"] <- "Cycling T-Cells"
+levels(temp_subset_Stromal_Immune@meta.data$celltype)[levels(temp_subset_Stromal_Immune@meta.data$celltype)=="CD8_T_Cells"] <- "CD8+ T Cells"
+levels(temp_subset_Stromal_Immune@meta.data$celltype)[levels(temp_subset_Stromal_Immune@meta.data$celltype)=="CD4_T_Cells"] <- "CD4+ T Cells"
+levels(temp_subset_Stromal_Immune@meta.data$celltype)[levels(temp_subset_Stromal_Immune@meta.data$celltype)=="Plasma_Cells"] <- "Plasma Cells"
+levels(temp_subset_Stromal_Immune@meta.data$celltype)[levels(temp_subset_Stromal_Immune@meta.data$celltype)=="T_Regs"] <- "T-Regs"
+levels(temp_subset_Stromal_Immune@meta.data$celltype)[levels(temp_subset_Stromal_Immune@meta.data$celltype)=="B_Cells"] <- "B-Cells"
+levels(temp_subset_Stromal_Immune@meta.data$celltype)[levels(temp_subset_Stromal_Immune@meta.data$celltype)=="Myeloid_4"] <- "Myeloid"
+levels(temp_subset_Stromal_Immune@meta.data$celltype)[levels(temp_subset_Stromal_Immune@meta.data$celltype)=="Myeloid_3"] <- "Myeloid"
+levels(temp_subset_Stromal_Immune@meta.data$celltype)[levels(temp_subset_Stromal_Immune@meta.data$celltype)=="Myeloid_2"] <- "Myeloid"
+levels(temp_subset_Stromal_Immune@meta.data$celltype)[levels(temp_subset_Stromal_Immune@meta.data$celltype)=="Myeloid_1"] <- "Myeloid"
+
+# re-annotate Epithelial cells
+temp_subset_Epithelial@meta.data$celltype <- factor(temp_subset_Epithelial@meta.data$celltype,
+                                             levels=unique(temp_subset_Epithelial@meta.data$celltype))
+levels(temp_subset_Epithelial@meta.data$celltype)[levels(temp_subset_Epithelial@meta.data$celltype)=="Epithelial_Basal"] <- "Cancer Epithelial"
+levels(temp_subset_Epithelial@meta.data$celltype)[levels(temp_subset_Epithelial@meta.data$celltype)=="Epithelial_Basal_Cycling"] <- "Cancer Proliferating"
+levels(temp_subset_Epithelial@meta.data$celltype)[levels(temp_subset_Epithelial@meta.data$celltype)=="Epithelial_Luminal_Mature"] <- "Normal Epithelial Mature Luminal"
+levels(temp_subset_Epithelial@meta.data$celltype)[levels(temp_subset_Epithelial@meta.data$celltype)=="Myoepithelial"] <- "Normal Epithelial Myoepithelial"
+
+# merge stromal-immune and epithelial objects
+temp_merged_all <- MergeSeurat(temp_subset_Stromal_Immune,
+                               temp_subset_Epithelial)
+
+# simpler patient annotations
+temp_merged_all@meta.data$patientID <- NULL
+temp_merged_all@meta.data$patientID[temp_merged_all@meta.data$orig.ident == "CID44041" ] <- "P1"
+temp_merged_all@meta.data$patientID[temp_merged_all@meta.data$orig.ident == "CID44971" ] <- "P2"
+temp_merged_all@meta.data$patientID[temp_merged_all@meta.data$orig.ident == "CID44991" ] <- "P3"
+temp_merged_all@meta.data$patientID[temp_merged_all@meta.data$orig.ident == "CID4513" ] <- "P4"
+temp_merged_all@meta.data$patientID[temp_merged_all@meta.data$orig.ident == "CID4515" ] <- "P5"
+
+# 11 SAVE REPROCESSED OBJECTS ---------------------------------------------
+
+# save individual objects
+for(celltype in c("Epithelial", "Stromal_Immune")){
+  temp_subset <- 
+    get(paste0("temp_subset_",celltype))
+  
+  saveRDS(temp_subset,
+          paste0("Output/Rdata/Rdata_",celltype,".png"))
+  
+}
 
 for(stromalsubset in c("CAFs", "VDSCs")){
   
@@ -575,4 +681,116 @@ for(stromalsubset in c("CAFs", "VDSCs")){
           paste0("Output/Rdata/Rdata_",stromalsubset,".png"))
   
 }
+
+
+# save complete objects
+saveRDS(temp_merged_all,
+        paste0("Output/Rdata/Rdata_complete_dataset.png"))
+
+saveRDS(temp_merged_stromal,
+        paste0("Output/Rdata/Rdata_all_stromal_dataset.png"))
+
+
+# 12 GENERATION OF STROMAL GENE SIGNATURES --------------------------------
+
+temp_merged_stromal <- 
+  SetAllIdent(temp_merged_stromal,
+              id = "stromal_celltype")
+
+temp_findallmarkers <- FindAllMarkers(temp_merged_stromal, 
+                                      logfc.threshold = 0.1, 
+                                      min.diff.pct = 0.1, 
+                                      min.pct = 0.1,
+                                      only.pos = T,
+                                      test.use = 'MAST')
+
+temp_findallmarkers <- dplyr::arrange(temp_findallmarkers,
+                                      (cluster),
+                                      desc(avg_logFC))
+# number of DEGs per cluster
+print(table(temp_findallmarkers$cluster))
+
+write.csv(temp_findallmarkers,
+          "Output/Stromal_gene_signatures/01_FindAllMarkers_stromal_celltype.csv", 
+          quote = F, 
+          row.names = T)
+
+# 13 EXPORT CLUSTER AVERAGED LOG MATRICES ---------------------------------------------------------
+
+# CLUSTER AVERAGED LOG NORMALISED EXPRESSION COMBINED STROMAL
+print(unique(temp_merged_all@meta.data$celltype))
+temp_merged_all <-
+  SetAllIdent(temp_merged_all, 
+              id = "celltype")
+
+current.cluster.ids <- as.vector(unique(temp_merged_all@ident))
+current.cluster.ids <- factor(current.cluster.ids,
+                              levels = current.cluster.ids)
+new.cluster.ids <- current.cluster.ids
+
+levels(new.cluster.ids)[levels(new.cluster.ids)=="iCAFs"] <- "Stromal"
+levels(new.cluster.ids)[levels(new.cluster.ids)=="myCAFs"] <- "Stromal"
+levels(new.cluster.ids)[levels(new.cluster.ids)=="dVDSCs"] <- "Stromal"
+levels(new.cluster.ids)[levels(new.cluster.ids)=="imVDSCs"] <- "Stromal"
+
+temp_merged_all <-
+  SetAllIdent(temp_merged_all, 
+              id = "celltype")
+
+temp_merged_all@ident <- plyr::mapvalues(temp_merged_all@ident, 
+                                    from = as.vector(current.cluster.ids), 
+                                    to = as.vector(new.cluster.ids)
+                                    )
+
+temp_merged_all@meta.data$celltype <-  temp_merged_all@ident
+
+temp_cluster_averages <- 
+  AverageExpression(temp_merged_all,
+                    return.seurat = T,
+                    show.progress = T)
+
+temp_data_frame <- 
+  as.matrix(temp_cluster_averages@data)
+
+avg_log_df <- 
+  as.data.frame(temp_data_frame)
+
+write.csv(avg_log_df,
+          "Output/Stromal_gene_signatures/ALL_CELLTYPES_merged_expression_values_log.csv",
+          row.names = T)
+
+# CLUSTER AVERAGED LOG NORMALISED EXPRESSION ONLY STROMAL
+temp_merged_stromal <- 
+  SetAllIdent(temp_merged_stromal,
+              id = "stromal_celltype")
+
+print(unique(temp_merged_stromal@meta.data$stromal_celltype))
+
+current.cluster.ids <- as.vector(unique(temp_merged_stromal@ident))
+current.cluster.ids <- factor(current.cluster.ids,
+                              levels = current.cluster.ids)
+new.cluster.ids <- current.cluster.ids
+
+temp_merged_stromal@ident <- plyr::mapvalues(temp_merged_stromal@ident, 
+                                         from = as.vector(current.cluster.ids), 
+                                         to = as.vector(new.cluster.ids)
+)
+
+temp_merged_stromal@meta.data$celltype <-  temp_merged_stromal@ident
+
+temp_cluster_averages <- 
+  AverageExpression(temp_merged_stromal,
+                    return.seurat = T,
+                    show.progress = T)
+
+temp_data_frame <- 
+  as.matrix(temp_cluster_averages@data)
+
+avg_log_df <- 
+  as.data.frame(temp_data_frame)
+
+write.csv(avg_log_df,
+          "Output/Stromal_gene_signatures/ALL_STROMAL_merged_expression_values_log.csv",
+          row.names = T)
+
 
