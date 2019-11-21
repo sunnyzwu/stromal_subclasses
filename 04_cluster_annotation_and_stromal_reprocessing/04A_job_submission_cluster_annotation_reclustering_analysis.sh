@@ -27,7 +27,7 @@ mkdir "output"
     cd "output"
     qsub \
     -cwd \
-    -pe smp 8 \
+    -pe smp 16 \
     -l mem_requested=10G \
     -P TumourProgression \
     -b y \
