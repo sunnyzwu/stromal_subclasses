@@ -29,4 +29,8 @@ For computing T-cell dysfunction and exclusion analysis, please see the tumour i
 - paper: https://www.nature.com/articles/s41591-018-0136-1
 - link to online tool: http://tide.dfci.harvard.edu/
 
+### Data availability
+The scRNA-Seq data from this study has been deposited in the European Nucleotide Archive (ENA) under the accession code PRJEB35405. This depository includes the demultiplexed paired ended reads (R1 and R2), Illumina indices and bam files processed using the Cellranger software. These paired ended reads (R1 and R2) and Illumina indices can be used for input for data reprocessing from the '01 cellranger count processing' step. 
 
+### Contact
+Please email s.wu@garvan.org.au for any additional questions about the analytical methods used in this paper. All other relevant data are available from the authors upon request.
