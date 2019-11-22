@@ -15,13 +15,13 @@ job submission script and R script for cluster annotations and reclustering of e
 
 ### 05 gene signature analysis
 #### AUCell
-R scripts for scoring of stromal-immune cells with cell type signatures (XCell database), T-cell exhaustion signatures (Blackburn et al. 2008) and the pancreatic ductal adenocarcinoma CAF signatures (David Tuveson's lab) using the AUCell method
+job submission script and R scripts for scoring of stromal-immune cells with cell type signatures (XCell database), T-cell exhaustion signatures (Blackburn et al. 2008) and the pancreatic ductal adenocarcinoma CAF signatures (David Tuveson's lab) using the AUCell method
 
 #### clusterProfiler
-R scripts for gene ontology enrichment of the gene signatures for each stromal subcluster. Top 250 DEGs are used. 
+job submission script and R scripts for gene ontology enrichment of the gene signatures for each stromal subcluster. Top 250 DEGs are used. 
 
 ### 06 pySCENIC transcription factor enrichment of reclustered CAFs and VDSCs
-job submission script for running pySCENIC (python based command line version) using the CAFs and VDSC raw count expression matrix as input. This also includes R script for filtering top TF candidates for clustering and visualisation
+job submission script and R scripts for exporting, filtering gene expression matrices, and running pySCENIC (python based command line version) with the CAFs and VDSC raw count expression matrix as input. This also includes R script for filtering top TF candidates for clustering and visualisation
 
 ### 07 stromal cell signalling predictions
 R script visualisation scripts for filtering stromal cell-cell signalling predictions. For processing ligand-receptor analysis, please visit (enter git link for Ruis github link)
