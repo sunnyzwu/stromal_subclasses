@@ -72,7 +72,7 @@ seurat_10X <- readRDS(paste0(temp_objects_path,
 
 # load cell identities
 temp_cell_ids <- 
-  read.csv("cell_ids/01_cell_ids.csv", 
+  read.csv("../cell_ids/01_cell_ids.csv", 
            row.names = "X")
 # order cell barcodes
 temp_cell_ids <- 
@@ -668,7 +668,7 @@ for(celltype in c("Epithelial", "Stromal_Immune")){
     get(paste0("temp_subset_",celltype))
   
   saveRDS(temp_subset,
-          paste0("Output/Rdata/Rdata_",celltype,".png"))
+          paste0("Output/Rdata/Rdata_",celltype,".Rdata"))
   
 }
 
@@ -678,17 +678,17 @@ for(stromalsubset in c("CAFs", "VDSCs")){
                                                stromalsubset))
   
   saveRDS(temp_stromal_subset_integrated,
-          paste0("Output/Rdata/Rdata_",stromalsubset,".png"))
+          paste0("Output/Rdata/Rdata_",stromalsubset,".Rdata"))
   
 }
 
 
 # save complete objects
 saveRDS(temp_merged_all,
-        paste0("Output/Rdata/Rdata_complete_dataset.png"))
+        paste0("Output/Rdata/Rdata_complete_dataset.Rdata"))
 
 saveRDS(temp_merged_stromal,
-        paste0("Output/Rdata/Rdata_all_stromal_dataset.png"))
+        paste0("Output/Rdata/Rdata_all_stromal_dataset.Rdata"))
 
 
 # 12 GENERATION OF STROMAL GENE SIGNATURES --------------------------------
