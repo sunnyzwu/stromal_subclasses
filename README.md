@@ -26,7 +26,7 @@ job submission script and R scripts for scoring of stromal-immune cells with cel
 ##### clusterProfiler
 job submission script and R scripts for gene ontology enrichment of the gene signatures for each stromal subcluster. Top 250 DEGs are used. 
 
-#### 06 pySCENIC transcription factor enrichment of reclustered CAFs and VDSCs
+#### 06 pySCENIC transcription factor enrichment of reclustered CAFs and PVL cells
 job submission script and R scripts for exporting, filtering gene expression matrices, and running pySCENIC (python based command line version) with the CAFs and VDSC raw count expression matrix as input. This also includes R script for filtering top TF candidates for clustering and visualisation
 
 #### 07 stromal cell signalling predictions
