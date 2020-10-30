@@ -1,5 +1,6 @@
 # stromal_subclasses
-code for data processing and visualisation associated with the Wu et al. manuscript "Single-cell analysis reveals diverse stromal subsets associated with immune evasion in triple-negative breast cancer"
+code for data processing and visualisation associated with the Wu et al. (2020) study "Stromal cell diversity associated with immune evasion in human triple‐negative breast cancer"
+- https://www.embopress.org/doi/full/10.15252/embj.2019104063
 
 ### 01 cellranger count processing
 job submission script for single-cell RNA-Seq processing using cellranger v2.1.1. 
@@ -24,7 +25,8 @@ job submission script and R scripts for gene ontology enrichment of the gene sig
 job submission script and R scripts for exporting, filtering gene expression matrices, and running pySCENIC (python based command line version) with the CAFs and VDSC raw count expression matrix as input. This also includes R script for filtering top TF candidates for clustering and visualisation
 
 ### 07 stromal cell signalling predictions
-R script visualisation scripts for filtering stromal cell-cell signalling predictions. For processing ligand-receptor analysis, please visit (enter git link for Ruis github link)
+R script visualisation scripts for filtering stromal cell-cell signalling predictions. 
+
 
 ### Other analytical tools used
 #### Immune evasion using TIDE
@@ -33,8 +35,13 @@ For computing T-cell dysfunction and exclusion analysis, please see the tumour i
 - paper: https://www.nature.com/articles/s41591-018-0136-1
 - link to online tool: http://tide.dfci.harvard.edu/
 
+#### Cell signalling using NATMI
+For processing ligand-receptor analysis, please see the NATMI documentation at:
+- https://github.com/asrhou/NATMI
+
 ### Data availability
-The scRNA-Seq data from this study has been deposited in the European Nucleotide Archive (ENA) under the accession code PRJEB35405. This depository includes the demultiplexed paired ended reads (R1 and R2), Illumina indices and bam files processed using the Cellranger software. These paired ended reads (R1 and R2) and Illumina indices can be used for input for data reprocessing from the '01 cellranger count processing' step. 
+Processed data, including count matrices (raw and normalised) and cell metadata, can be found at the Broad Single Cell Portal at the following link:
+- https://singlecell.broadinstitute.org/single_cell/study/SCP1106/stromal-cell-diversity-associated-with-immune-evasion-in-human-triple-negative-breast-cancer
 
 ### Contact
-Please email s.wu@garvan.org.au for any additional questions about the analytical methods used in this paper. All other relevant data are available from the authors upon request.
+Please email s.wu@garvan.org.au or a.swarbrick@garvan.org.au for any additional questions about the analytical methods used in this paper. All other relevant data are available from the authors upon request.
