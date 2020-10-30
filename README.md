@@ -17,7 +17,7 @@ job submission script and R script for processing individual seurat objects
 job submission script and R script for integrating seurat objects
 
 #### 04 cluster annotation and reclustering 
-job submission script and R script for cluster annotations and reclustering of epithelial cells, stromal-immune cells and individual stromal subpopulations (CAFs and VDSCs). This R script also includes the generation of stromal gene signatures and export of gene expression matrices for downstream SCENIC (step 06).
+job submission script and R script for cluster annotations and reclustering of epithelial cells, stromal-immune cells and individual stromal subpopulations (CAFs and PVL cells). This R script also includes the generation of stromal gene signatures and export of gene expression matrices for downstream SCENIC (step 06).
 
 #### 05 gene signature analysis
 ##### AUCell
@@ -27,7 +27,7 @@ job submission script and R scripts for scoring of stromal-immune cells with cel
 job submission script and R scripts for gene ontology enrichment of the gene signatures for each stromal subcluster. Top 250 DEGs are used. 
 
 #### 06 pySCENIC transcription factor enrichment of reclustered CAFs and PVL cells
-job submission script and R scripts for exporting, filtering gene expression matrices, and running pySCENIC (python based command line version) with the CAFs and VDSC raw count expression matrix as input. This also includes R script for filtering top TF candidates for clustering and visualisation
+job submission script and R scripts for exporting, filtering gene expression matrices, and running pySCENIC (python based command line version) with the CAFs and PVL raw count expression matrix as input. This also includes R script for filtering top TF candidates for clustering and visualisation
 
 #### 07 stromal cell signalling predictions
 R script visualisation scripts for filtering stromal cell-cell signalling predictions. 
